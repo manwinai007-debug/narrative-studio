@@ -105,11 +105,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setProjects(projs);
   }, []);
 
+  const loadStats = useCallback(async () => {
+    const s = await db.getStats();
+    setStats(s);
+  }, []);
+
   const createProject = useCallback(async (data: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => {
     const project = await db.createProject(data);
     await refreshProjects();
+    await loadStats();
     return project;
-  }, [refreshProjects]);
+  }, [refreshProjects, loadStats]);
 
   const updateProject = useCallback(async (id: string, data: Partial<Project>) => {
     await db.updateProject(id, data);
@@ -122,8 +128,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const deleteProject = useCallback(async (id: string) => {
     await db.deleteProject(id);
     await refreshProjects();
+    await loadStats();
     if (activeProject?.id === id) setActiveProject(null);
-  }, [activeProject]);
+  }, [activeProject, loadStats]);
 
   const loadScripts = useCallback(async (projectId: string) => {
     const s = await db.getScripts(projectId);
@@ -133,8 +140,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const createScript = useCallback(async (data: Omit<Script, 'id' | 'createdAt' | 'updatedAt'>) => {
     const script = await db.createScript(data);
     if (activeProject) await loadScripts(activeProject.id);
+    await loadStats();
     return script;
-  }, [activeProject, loadScripts]);
+  }, [activeProject, loadScripts, loadStats]);
 
   const updateScript = useCallback(async (id: string, data: Partial<Script>) => {
     await db.updateScript(id, data);
@@ -186,8 +194,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const createEpisode = useCallback(async (data: Omit<Episode, 'id' | 'createdAt' | 'updatedAt'>) => {
     const episode = await db.createEpisode(data);
     if (activeProject) await loadEpisodes(activeProject.id);
+    await loadStats();
     return episode;
-  }, [activeProject, loadEpisodes]);
+  }, [activeProject, loadEpisodes, loadStats]);
 
   const updateEpisode = useCallback(async (id: string, data: Partial<Episode>) => {
     await db.updateEpisode(id, data);
@@ -202,11 +211,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const loadActivity = useCallback(async (projectId?: string) => {
     const a = await db.getActivity(projectId);
     setActivity(a.sort((x, y) => new Date(y.createdAt).getTime() - new Date(x.createdAt).getTime()));
-  }, []);
-
-  const loadStats = useCallback(async () => {
-    const s = await db.getStats();
-    setStats(s);
   }, []);
 
   return (

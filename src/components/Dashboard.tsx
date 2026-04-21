@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useData } from '@/lib/DataContext';
 
 function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string | number; color: string }) {
@@ -18,7 +19,13 @@ function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label:
 
 export default function Dashboard({ page }: { page: string }) {
   if (page !== 'dashboard') return null;
-  const { stats, projects, activity, activeProject, loadActivity, setActiveProject } = useData();
+  const { stats, projects, activity, activeProject, loadStats, loadActivity, setActiveProject } = useData();
+
+  // Refresh stats and activity every time Dashboard mounts
+  React.useEffect(() => {
+    loadStats();
+    loadActivity();
+  }, [loadStats, loadActivity]);
 
   if (!stats) return <div className="p-8 text-gray-400">Loading...</div>;
 
